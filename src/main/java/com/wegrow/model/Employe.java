@@ -31,7 +31,6 @@ public class Employe {
     @JoinColumn(name = "departement_id", nullable = false)
     private Departement departement;
 
-    // Gestion de la concurrence (Optimistic Locking)
     @Version
     private Long version;
 

@@ -19,7 +19,6 @@ public class Departement {
 
     private String description;
 
-    // Gestion de la concurrence (Optimistic Locking)
     @Version
     private Long version;
 
