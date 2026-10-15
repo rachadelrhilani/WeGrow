@@ -7,6 +7,7 @@ import com.wegrow.exception.ResourceNotFoundException;
 import com.wegrow.model.Departement;
 import com.wegrow.repository.DepartementRepository;
 import com.wegrow.service.DepartementService;
+
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 public class DepartementServiceImpl implements DepartementService {
 
     private final DepartementRepository departementRepository;
+    
 
     public DepartementServiceImpl(DepartementRepository departementRepository) {
         this.departementRepository = departementRepository;
@@ -32,7 +34,6 @@ public class DepartementServiceImpl implements DepartementService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<DepartementDTO> getAllDepartements() {
         return departementRepository.findAll().stream()
                 .map(d -> new DepartementDTO(
@@ -45,7 +46,6 @@ public class DepartementServiceImpl implements DepartementService {
     }
 
     @Override
-    @Transactional
     public void deleteDepartement(Long id) {
         Departement dep = departementRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Département introuvable avec l'ID : " + id));

@@ -5,20 +5,19 @@
        xmlns:mvc="http://www.springframework.org/schema/mvc"
        xmlns:jpa="http://www.springframework.org/schema/data/jpa"
        xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
        xsi:schemaLocation="
            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
            http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
            http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
-           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
 
-    <!-- 1. Support Spring MVC (Contrôleurs REST, Formateurs, JSON) -->
     <mvc:annotation-driven />
 
-    <!-- 2. Chargement du fichier de propriétés BDD -->
     <context:property-placeholder location="classpath:db.properties" />
 
-    <!-- 3. Connexion Base de Données (DataSource MySQL) -->
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="${db.driver}" />
         <property name="url" value="${db.url}" />
@@ -26,7 +25,6 @@
         <property name="password" value="${db.password}" />
     </bean>
 
-    <!-- 4. Factory JPA / Hibernate (Gestionnaire d'Entités) -->
     <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
         <property name="dataSource" ref="dataSource" />
         <property name="packagesToScan" value="com.wegrow.model" />
@@ -44,17 +42,26 @@
         </property>
     </bean>
 
-    <!-- 5. Gestionnaire de Transactions (Spring Tx) -->
     <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
         <property name="entityManagerFactory" ref="entityManagerFactory" />
     </bean>
 
-    <tx:annotation-driven transaction-manager="transactionManager" />
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="get*" read-only="true" />
+            <tx:method name="find*" read-only="true" />
+            <tx:method name="read*" read-only="true" />
+            <tx:method name="*" rollback-for="java.lang.Exception" />
+        </tx:attributes>
+    </tx:advice>
 
-    <!-- 6. Activation des Repositories Spring Data JPA -->
+    <aop:config>
+        <aop:pointcut id="serviceMethods" expression="execution(* com.wegrow.service.impl.*.*(..))" />
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="serviceMethods" />
+    </aop:config>
+
     <jpa:repositories base-package="com.wegrow.repository" />
 
-    <!-- 7. Services (Injection par Constructeur vers Interfaces) -->
     <bean id="departementService" class="com.wegrow.service.impl.DepartementServiceImpl">
         <constructor-arg ref="departementRepository" />
     </bean>
@@ -64,7 +71,6 @@
         <constructor-arg ref="departementRepository" />
     </bean>
 
-    <!-- 8. Contrôleurs REST -->
     <bean id="departementController" class="com.wegrow.controller.DepartementController">
         <constructor-arg ref="departementService" />
     </bean>
@@ -73,7 +79,6 @@
         <constructor-arg ref="employeService" />
     </bean>
 
-    <!-- 9. Gestionnaire Global des Exceptions REST (HTTP 404, 409) -->
     <bean id="globalExceptionHandler" class="com.wegrow.exception.GlobalExceptionHandler" />
 
 </beans>

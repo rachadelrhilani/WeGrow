@@ -13,7 +13,6 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // 1. Ressource non trouvée -> Code HTTP 404
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleNotFound(ResourceNotFoundException ex) {
         Map<String, String> response = new HashMap<>();
@@ -21,7 +20,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
-    // 2. Conflit métier (Doublon ou Suppression impossible) -> Code HTTP 409
+
     @ExceptionHandler({ResourceAlreadyExistsException.class, ResourceConflictException.class})
     public ResponseEntity<Map<String, String>> handleConflict(RuntimeException ex) {
         Map<String, String> response = new HashMap<>();
@@ -29,7 +28,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
-    // 3. Conflit de concurrence (Optimistic Lock) ou contrainte SQL BDD -> Code HTTP 409
     @ExceptionHandler({DataIntegrityViolationException.class, ObjectOptimisticLockingFailureException.class})
     public ResponseEntity<Map<String, String>> handleDataIntegrityAndConcurrency(Exception ex) {
         Map<String, String> response = new HashMap<>();
@@ -37,7 +35,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
-    // 4. Erreurs génériques (Fallback) -> Code HTTP 500
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGenericException(Exception ex) {
         Map<String, String> response = new HashMap<>();

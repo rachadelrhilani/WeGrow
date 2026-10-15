@@ -8,7 +8,6 @@ import com.wegrow.model.Employe;
 import com.wegrow.repository.DepartementRepository;
 import com.wegrow.repository.EmployeRepository;
 import com.wegrow.service.EmployeService;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,14 +17,12 @@ public class EmployeServiceImpl implements EmployeService {
     private final EmployeRepository employeRepository;
     private final DepartementRepository departementRepository;
 
-
     public EmployeServiceImpl(EmployeRepository employeRepository, DepartementRepository departementRepository) {
         this.employeRepository = employeRepository;
         this.departementRepository = departementRepository;
     }
 
     @Override
-    @Transactional
     public EmployeDTO addEmployeToDepartement(Long departementId, Employe employe) {
         Departement dep = departementRepository.findById(departementId)
                 .orElseThrow(() -> new ResourceNotFoundException("Département introuvable avec l'ID : " + departementId));
@@ -48,7 +45,6 @@ public class EmployeServiceImpl implements EmployeService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<EmployeDTO> getEmployesByDepartement(Long departementId) {
         if (!departementRepository.existsById(departementId)) {
             throw new ResourceNotFoundException("Département introuvable avec l'ID : " + departementId);

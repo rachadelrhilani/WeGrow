@@ -6,6 +6,7 @@ import com.wegrow.model.Departement;
 import java.util.List;
 
 public interface DepartementService {
+    
     DepartementDTO createDepartement(Departement departement);
 
     List<DepartementDTO> getAllDepartements();
