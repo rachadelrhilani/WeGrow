@@ -16,7 +16,6 @@ public class DepartementServiceImpl implements DepartementService {
 
     private final DepartementRepository departementRepository;
 
-    // Injection par constructeur (exigence du brief)
     public DepartementServiceImpl(DepartementRepository departementRepository) {
         this.departementRepository = departementRepository;
     }
@@ -24,12 +23,10 @@ public class DepartementServiceImpl implements DepartementService {
     @Override
     @Transactional
     public DepartementDTO createDepartement(Departement departement) {
-        // régle si le nom n'existe pas
         if (departementRepository.existsByNom(departement.getNom())) {
             throw new ResourceAlreadyExistsException("Un département avec le nom '" + departement.getNom() + "' existe déjà.");
         }
         
-        // creation de departement
         Departement saved = departementRepository.save(departement);
         return new DepartementDTO(saved.getId(), saved.getNom(), saved.getDescription(), 0);
     }
@@ -37,7 +34,6 @@ public class DepartementServiceImpl implements DepartementService {
     @Override
     @Transactional(readOnly = true)
     public List<DepartementDTO> getAllDepartements() {
-        // liste des departements avec leur nombre d'employes
         return departementRepository.findAll().stream()
                 .map(d -> new DepartementDTO(
                         d.getId(),
