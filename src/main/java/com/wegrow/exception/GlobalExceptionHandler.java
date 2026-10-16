@@ -1,44 +1,33 @@
 package com.wegrow.exception;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleNotFound(ResourceNotFoundException ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("error", ex.getMessage());
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    public static void handle(HttpServletResponse res, ObjectMapper json, Exception e) throws Exception {
+        if (e instanceof ResourceNotFoundException) {
+            writeError(res, json, 404, e.getMessage());
+        } else if (e instanceof ResourceAlreadyExistsException || e instanceof ResourceConflictException) {
+            writeError(res, json, 409, e.getMessage());
+        } else if (e instanceof DataIntegrityViolationException
+                || e instanceof ObjectOptimisticLockingFailureException) {
+            writeError(res, json, 409, "Conflit de données, veuillez réessayer.");
+        } else {
+            writeError(res, json, 500, "Erreur interne : " + e.getMessage());
+        }
     }
 
-
-    @ExceptionHandler({ResourceAlreadyExistsException.class, ResourceConflictException.class})
-    public ResponseEntity<Map<String, String>> handleConflict(RuntimeException ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("error", ex.getMessage());
-        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
-    }
-
-    @ExceptionHandler({DataIntegrityViolationException.class, ObjectOptimisticLockingFailureException.class})
-    public ResponseEntity<Map<String, String>> handleDataIntegrityAndConcurrency(Exception ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("error", "Un conflit de données ou de concurrence s'est produit. Veuillez réessayer.");
-        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleGenericException(Exception ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("error", "Une erreur interne s'est produite : " + ex.getMessage());
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    public static void writeError(HttpServletResponse res, ObjectMapper json, int status, String message)
+            throws Exception {
+        Map<String, String> body = new HashMap<>();
+        body.put("error", message);
+        res.setStatus(status);
+        json.writeValue(res.getWriter(), body);
     }
 }
