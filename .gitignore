@@ -1,8 +1,0 @@
-# Dossier ressources (config locale : db.properties, applicationContext.xml)
-src/main/resources/
-
-# Fichier doc du projet
-COMPRENDRE_LE_PROJET.md
-
-# Build Maven (généré, ne pas pusher)
-target/
